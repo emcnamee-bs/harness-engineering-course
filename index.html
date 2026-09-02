@@ -1,0 +1,867 @@
+<title>Harness Engineering</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+:root{
+  --paper:#eef1ef;
+  --card:#ffffff;
+  --ink:#171b23;
+  --ink-soft:#525a63;
+  --ink-faint:#7d848c;
+  --rule:#d7dbd8;
+  --rule-strong:#b9bfbb;
+  --accent:#0e7c86;
+  --accent-ink:#ffffff;
+  --accent-soft:#e2f1f0;
+  --signal:#c1560f;
+  --signal-soft:#fbe9dd;
+  --good:#2f7a4d;
+  --good-soft:#e3f0e6;
+  --code-bg:#12181d;
+  --code-ink:#d9e6e4;
+  --shadow: 0 1px 2px rgba(20,25,30,.06), 0 8px 24px -12px rgba(20,25,30,.18);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#12151a;
+    --card:#191e24;
+    --ink:#e7e9ea;
+    --ink-soft:#a5abb2;
+    --ink-faint:#7b828a;
+    --rule:#2b3138;
+    --rule-strong:#3a414a;
+    --accent:#3fd2c4;
+    --accent-ink:#0b1613;
+    --accent-soft:#132723;
+    --signal:#f0894a;
+    --signal-soft:#2a1c12;
+    --good:#5fbf82;
+    --good-soft:#12251a;
+    --code-bg:#0b0f13;
+    --code-ink:#cbe6de;
+    --shadow: 0 1px 2px rgba(0,0,0,.35), 0 8px 28px -12px rgba(0,0,0,.6);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#12151a;
+  --card:#191e24;
+  --ink:#e7e9ea;
+  --ink-soft:#a5abb2;
+  --ink-faint:#7b828a;
+  --rule:#2b3138;
+  --rule-strong:#3a414a;
+  --accent:#3fd2c4;
+  --accent-ink:#0b1613;
+  --accent-soft:#132723;
+  --signal:#f0894a;
+  --signal-soft:#2a1c12;
+  --good:#5fbf82;
+  --good-soft:#12251a;
+  --code-bg:#0b0f13;
+  --code-ink:#cbe6de;
+  --shadow: 0 1px 2px rgba(0,0,0,.35), 0 8px 28px -12px rgba(0,0,0,.6);
+}
+
+*{box-sizing:border-box;}
+body{
+  background:var(--paper);
+  color:var(--ink);
+  font-family:'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;
+  font-size:15.5px;
+  line-height:1.55;
+}
+h1,h2,h3{font-family:'Big Shoulders Display', 'IBM Plex Sans', sans-serif; text-wrap:balance; letter-spacing:.01em;}
+code, .mono{font-family:'IBM Plex Mono', ui-monospace, monospace;}
+a{color:var(--accent);}
+::selection{background:var(--accent-soft); color:var(--ink);}
+
+.shell{max-width:1180px; margin:0 auto; padding:0 28px 120px;}
+
+/* ---------- Masthead ---------- */
+.masthead{
+  padding:56px 0 36px;
+  border-bottom:1px solid var(--rule);
+  display:grid; gap:18px;
+}
+.eyebrow{
+  font-family:'IBM Plex Mono', monospace;
+  font-size:11.5px; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--accent); font-weight:600;
+}
+h1.title{
+  font-size:clamp(40px, 7vw, 72px);
+  font-weight:800;
+  line-height:.98;
+  margin:0;
+}
+.formula{
+  font-family:'IBM Plex Mono', monospace;
+  font-size:16px;
+  color:var(--ink-soft);
+  border:1px dashed var(--rule-strong);
+  border-radius:4px;
+  padding:10px 14px;
+  display:inline-flex; gap:8px; align-items:center;
+  width:fit-content;
+  background:var(--card);
+}
+.formula b{color:var(--ink); font-weight:600;}
+.formula .plus{color:var(--signal); font-weight:700;}
+.lede{max-width:62ch; color:var(--ink-soft); font-size:16px;}
+.lede strong{color:var(--ink);}
+
+.progress-wrap{
+  display:flex; align-items:center; gap:14px;
+  margin-top:6px;
+}
+.progress-track{
+  flex:1; max-width:340px; height:8px; border-radius:99px;
+  background:var(--rule); overflow:hidden;
+}
+.progress-fill{height:100%; width:0%; background:var(--accent); border-radius:99px; transition:width .3s ease;}
+.progress-label{font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:var(--ink-faint); white-space:nowrap;}
+
+/* ---------- Layout: rail + main ---------- */
+.layout{display:grid; grid-template-columns:220px 1fr; gap:44px; margin-top:40px;}
+@media (max-width:860px){ .layout{grid-template-columns:1fr;} }
+
+.rail{position:sticky; top:20px; align-self:start; max-height:calc(100vh - 40px); overflow:auto;}
+@media (max-width:860px){
+  .rail{position:static; max-height:none; overflow-x:auto; overflow-y:hidden;}
+  .rail-list{display:flex; gap:8px; padding-bottom:6px;}
+  .rail-list a{white-space:nowrap; border-bottom:none !important; padding:6px 10px !important; border:1px solid var(--rule); border-radius:99px;}
+}
+.rail-list{list-style:none; margin:0; padding:0; display:flex; flex-direction:column;}
+.rail-list a{
+  display:flex; align-items:baseline; gap:8px;
+  padding:7px 4px; text-decoration:none; color:var(--ink-soft);
+  border-bottom:1px solid transparent;
+  font-size:13px;
+}
+.rail-list a:hover{color:var(--ink);}
+.rail-list .num{font-family:'IBM Plex Mono',monospace; color:var(--ink-faint); font-size:11.5px;}
+.rail-list a.done .num{color:var(--good);}
+.rail-list a.done::after{content:"✓"; margin-left:auto; color:var(--good); font-size:11px;}
+
+/* ---------- Syllabus grid ---------- */
+.syllabus{
+  display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
+  gap:10px; margin:34px 0 8px;
+}
+.syl-card{
+  background:var(--card); border:1px solid var(--rule); border-radius:6px;
+  padding:12px 12px 10px; box-shadow:var(--shadow); text-decoration:none; color:var(--ink);
+  display:flex; flex-direction:column; gap:4px;
+}
+.syl-card .num{font-family:'Big Shoulders Display'; font-weight:700; font-size:26px; color:var(--accent); line-height:1;}
+.syl-card .name{font-size:12.5px; font-weight:600; line-height:1.25;}
+
+/* ---------- Section chrome ---------- */
+section.mod{
+  scroll-margin-top:20px;
+  padding:38px 0;
+  border-bottom:1px solid var(--rule);
+}
+section.mod:last-of-type{border-bottom:none;}
+.mod-head{display:flex; gap:16px; align-items:flex-start; margin-bottom:14px;}
+.mod-num{
+  font-family:'Big Shoulders Display'; font-weight:800; font-size:52px; line-height:.9;
+  color:var(--rule-strong); min-width:64px;
+}
+.mod-head h2{font-size:26px; font-weight:700; margin:2px 0 6px;}
+.tags{display:flex; gap:6px; flex-wrap:wrap;}
+.tag{
+  font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:.05em; text-transform:uppercase;
+  padding:2px 7px; border-radius:99px; border:1px solid var(--rule-strong); color:var(--ink-faint);
+}
+.tag.guide{border-color:var(--accent); color:var(--accent);}
+.tag.sensor{border-color:var(--signal); color:var(--signal);}
+.tag.structure{border-color:var(--ink-faint); color:var(--ink-faint);}
+
+.check-row{margin-left:auto; display:flex; align-items:center; gap:8px; flex-shrink:0;}
+.check-row input{accent-color:var(--good); width:16px; height:16px; cursor:pointer;}
+.check-row label{font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--ink-faint); cursor:pointer;}
+
+.block{display:grid; grid-template-columns:1fr; gap:16px; margin-left:80px;}
+@media (max-width:640px){ .block{margin-left:0;} .mod-num{min-width:auto;} }
+
+.wy{display:grid; grid-template-columns:1fr 1fr; gap:16px;}
+@media (max-width:700px){ .wy{grid-template-columns:1fr;} }
+.wy-col{background:var(--card); border:1px solid var(--rule); border-radius:6px; padding:14px 16px; box-shadow:var(--shadow);}
+.wy-col h4{
+  margin:0 0 6px; font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.1em; text-transform:uppercase;
+  color:var(--ink-faint); font-weight:600;
+}
+.wy-col p{margin:0; font-size:14px; color:var(--ink);}
+
+.build{
+  background:var(--card); border:1px solid var(--rule); border-left:4px solid var(--signal);
+  border-radius:0 6px 6px 0; padding:16px 18px; box-shadow:var(--shadow);
+}
+.build h4{
+  margin:0 0 10px; font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.1em; text-transform:uppercase;
+  color:var(--signal); font-weight:700; display:flex; align-items:center; gap:6px;
+}
+.build ul{margin:0 0 12px; padding-left:18px;}
+.build li{margin-bottom:5px; font-size:14px;}
+.build li::marker{color:var(--signal);}
+pre{
+  background:var(--code-bg); color:var(--code-ink); border-radius:5px;
+  padding:12px 14px; overflow-x:auto; font-size:12.5px; line-height:1.55; margin:0 0 10px;
+}
+pre code{font-family:'IBM Plex Mono',monospace;}
+.verify{
+  display:flex; gap:8px; align-items:flex-start; margin-top:8px;
+  font-size:13px; color:var(--good); background:var(--good-soft); border-radius:5px; padding:8px 10px;
+}
+.verify b{font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:.08em; text-transform:uppercase;}
+
+.capstone{border:1px solid var(--accent); background:var(--accent-soft);}
+.capstone .build{border-left-color:var(--accent);}
+.capstone .build h4{color:var(--accent);}
+
+/* ---------- Reference / appendix ---------- */
+.ref-title{font-size:26px; font-weight:700; margin:0 0 6px;}
+.ref-grid{display:grid; grid-template-columns:1fr; gap:0; margin-top:18px; border-top:1px solid var(--rule);}
+.ref-row{
+  display:grid; grid-template-columns:200px 1fr; gap:18px;
+  padding:14px 0; border-bottom:1px solid var(--rule);
+}
+@media (max-width:700px){ .ref-row{grid-template-columns:1fr; gap:4px;} }
+.ref-row .name{font-weight:600; font-size:14px;}
+.ref-row .desc{font-size:13.5px; color:var(--ink-soft);}
+.ref-row a{text-decoration:none; border-bottom:1px solid var(--rule-strong);}
+
+.reading-list{list-style:none; margin:16px 0 0; padding:0; display:grid; gap:8px;}
+.reading-list li{font-size:13.5px; display:flex; gap:8px;}
+.reading-list .dot{color:var(--ink-faint); font-family:'IBM Plex Mono',monospace; font-size:12px; min-width:1.4em;}
+.reading-list a{border-bottom:1px solid var(--rule-strong); text-decoration:none;}
+
+footer{padding:40px 0 10px; color:var(--ink-faint); font-size:12.5px; border-top:1px solid var(--rule); margin-top:20px;}
+
+.snapshot{
+  display:inline-flex; align-items:center; gap:8px; width:fit-content;
+  font-family:'IBM Plex Mono', monospace; font-size:11.5px;
+  color:var(--signal); background:var(--signal-soft); border:1px solid var(--signal);
+  border-radius:99px; padding:4px 12px 4px 10px;
+}
+.snapshot .sw{width:6px; height:6px; border-radius:50%; background:var(--signal); flex-shrink:0;}
+</style>
+
+<div class="shell">
+
+  <header class="masthead">
+    <div class="eyebrow">A build-first curriculum</div>
+    <h1 class="title">Harness&nbsp;Engineering</h1>
+    <div class="snapshot"><span class="sw"></span>Snapshot accurate as of September&nbsp;1, 2026 — a fast-moving field; treat named tools/frameworks as a starting point, not a permanent map.</div>
+    <div class="formula"><b>Agent</b> <span class="plus">=</span> <b>Model</b> <span class="plus">+</span> <b>Harness</b></div>
+    <p class="lede">
+      The model is fixed — you rent it by the token. <strong>The harness is everything else</strong>: the loop that
+      calls it, the tools it can reach, what stays in context and what gets thrown away, what it's allowed to touch
+      unsupervised, and how you know any of it worked. This class has eleven modules. Each one ships a working
+      increment of the same program — by module 10 you'll have built a small, real coding agent, not read about one.
+    </p>
+    <div class="progress-wrap">
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+      <span class="progress-label" id="progressLabel">0 / 11 modules built</span>
+    </div>
+  </header>
+
+  <div class="layout">
+    <nav class="rail">
+      <ul class="rail-list" id="railList">
+        <li><a href="#m00" data-mod="00"><span class="num">00</span> Orientation</a></li>
+        <li><a href="#m01" data-mod="01"><span class="num">01</span> The Bare Loop</a></li>
+        <li><a href="#m02" data-mod="02"><span class="num">02</span> Tool Interfaces</a></li>
+        <li><a href="#m03" data-mod="03"><span class="num">03</span> Eval Harness</a></li>
+        <li><a href="#m04" data-mod="04"><span class="num">04</span> Context Mgmt</a></li>
+        <li><a href="#m05" data-mod="05"><span class="num">05</span> Permissions</a></li>
+        <li><a href="#m06" data-mod="06"><span class="num">06</span> Sub-Agents</a></li>
+        <li><a href="#m07" data-mod="07"><span class="num">07</span> Memory</a></li>
+        <li><a href="#m08" data-mod="08"><span class="num">08</span> MCP Tools</a></li>
+        <li><a href="#m09" data-mod="09"><span class="num">09</span> Hardening</a></li>
+        <li><a href="#m10" data-mod="10"><span class="num">10</span> Capstone</a></li>
+        <li><a href="#ref"><span class="num">→</span> Field Notes</a></li>
+      </ul>
+    </nav>
+
+    <main>
+
+      <div class="syllabus">
+        <a class="syl-card" href="#m00"><span class="num">00</span><span class="name">Orientation</span></a>
+        <a class="syl-card" href="#m01"><span class="num">01</span><span class="name">The Bare Loop</span></a>
+        <a class="syl-card" href="#m02"><span class="num">02</span><span class="name">Tool Interfaces</span></a>
+        <a class="syl-card" href="#m03"><span class="num">03</span><span class="name">Eval Harness</span></a>
+        <a class="syl-card" href="#m04"><span class="num">04</span><span class="name">Context Management</span></a>
+        <a class="syl-card" href="#m05"><span class="num">05</span><span class="name">Permissions &amp; Sandbox</span></a>
+        <a class="syl-card" href="#m06"><span class="num">06</span><span class="name">Sub-Agent Fan-Out</span></a>
+        <a class="syl-card" href="#m07"><span class="num">07</span><span class="name">Persistent Memory</span></a>
+        <a class="syl-card" href="#m08"><span class="num">08</span><span class="name">Tool Ecosystem (MCP)</span></a>
+        <a class="syl-card" href="#m09"><span class="num">09</span><span class="name">Production Hardening</span></a>
+        <a class="syl-card" href="#m10"><span class="num">10</span><span class="name">Capstone</span></a>
+      </div>
+
+      <!-- 00 ORIENTATION -->
+      <section class="mod" id="m00">
+        <div class="mod-head">
+          <div class="mod-num">00</div>
+          <div>
+            <h2>Orientation: what a harness actually is</h2>
+            <div class="tags"><span class="tag structure">map, no build</span></div>
+          </div>
+          <div class="check-row"><input type="checkbox" data-mod="00" id="c00"><label for="c00">built</label></div>
+        </div>
+        <div class="block">
+          <div class="wy">
+            <div class="wy-col">
+              <h4>What</h4>
+              <p>"Harness engineering" is a term that crystallized in early 2026 (Mitchell Hashimoto's essay on
+              permanently fixing an agent's <em>environment</em> rather than its prompt) and was picked up within
+              weeks by both Anthropic and OpenAI's engineering blogs. Martin Fowler's team gives the sharpest model:
+              a harness regulates a model through two control types — <strong>guides</strong> (feedforward: docs,
+              examples, tool descriptions that steer behavior <em>before</em> generation) and <strong>sensors</strong>
+              (feedback: linters, tests, evals that catch problems <em>after</em> generation) — each implemented either
+              <strong>computationally</strong> (deterministic, fast, brittle) or <strong>inferentially</strong>
+              (LLM-judged, flexible, noisy).</p>
+            </div>
+            <div class="wy-col">
+              <h4>Why it exists</h4>
+              <p>Prompting a smarter model gets you diminishing returns fast. Nearly all real gains in agent
+              capability since 2024 have come from the scaffolding, not the weights — better tool descriptions,
+              tighter context management, real eval loops. The industry now treats harness quality, not model choice,
+              as the main lever a team actually controls.</p>
+            </div>
+          </div>
+          <div class="build">
+            <h4>🔍 Field exercise</h4>
+            <ul>
+              <li>Open your own <code>~/.claude/CLAUDE.md</code> and find the "Autonomous agent orchestration"
+                guardrails section. Tag each of its 9 rules as GUIDE or SENSOR, and COMPUTATIONAL or INFERENTIAL.</li>
+              <li>Notice this session's own permission-mode system, its memory files under
+                <code>memory/MEMORY.md</code>, and the fork you could spawn to research this — each is a harness
+                component you're about to build a miniature of yourself.</li>
+            </ul>
+            <div class="verify"><b>check</b> You can point at one real mechanism in this environment for each of
+              guide/sensor and computational/inferential — four concrete examples, not four definitions.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 01 BARE LOOP -->
+      <section class="mod" id="m01">
+        <div class="mod-head">
+          <div class="mod-num">01</div>
+          <div>
+            <h2>The bare loop</h2>
+            <div class="tags"><span class="tag structure">structure</span></div>
+          </div>
+          <div class="check-row"><input type="checkbox" data-mod="01" id="c01"><label for="c01">built</label></div>
+        </div>
+        <div class="block">
+          <div class="wy">
+            <div class="wy-col">
+              <h4>What</h4>
+              <p>An agent is, underneath everything, a <code>while</code> loop around an API call: send messages,
+              get a response, decide whether it's asking for a tool or giving a final answer, act, feed the result
+              back in, repeat. This is the ReAct pattern (Yao et al. 2022) that every harness below still runs on.</p>
+            </div>
+            <div class="wy-col">
+              <h4>Why it exists</h4>
+              <p>Build this ugly first. Skipping straight to a framework (LangGraph, CrewAI) hides the one fact
+              you need burned in: there is no magic control flow, only text going in and text coming back out,
+              and your code deciding what that text means.</p>
+            </div>
+          </div>
+          <div class="build">
+            <h4>🛠 Build</h4>
+            <ul>
+              <li>One script, one hardcoded tool (a calculator or <code>read_file</code>). No SDK tool-calling yet —
+                have the model emit a plain-text tag like <code>&lt;tool&gt;add(2,3)&lt;/tool&gt;</code> and parse it
+                yourself with a regex. Feel the fragility on purpose.</li>
+              <li>Loop until the model produces a final-answer tag with no tool call in it.</li>
+            </ul>
+            <pre><code>while True:
+    reply = call_model(messages)
+    if "&lt;tool&gt;" in reply:
+        result = run_tool(parse(reply))
+        messages.append({"role":"assistant","content":reply})
+        messages.append({"role":"user","content":f"OBSERVATION: {result}"})
+    else:
+        return reply</code></pre>
+            <div class="verify"><b>check</b> Ask a question needing two sequential tool calls (e.g. "read file A,
+              then compute the sum of the numbers in it"). Confirm the loop runs exactly twice before stopping.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 02 TOOL INTERFACES -->
+      <section class="mod" id="m02">
+        <div class="mod-head">
+          <div class="mod-num">02</div>
+          <div>
+            <h2>Tool interfaces (the ACI)</h2>
+            <div class="tags"><span class="tag guide">guide</span><span class="tag guide">inferential</span></div>
+          </div>
+          <div class="check-row"><input type="checkbox" data-mod="02" id="c02"><label for="c02">built</label></div>
+        </div>
+        <div class="block">
+          <div class="wy">
+            <div class="wy-col">
+              <h4>What</h4>
+              <p>Replace text-tag parsing with real structured tool schemas (JSON Schema, native function-calling).
+              Princeton's SWE-agent calls this the <strong>Agent-Computer Interface</strong> — the tool surface is
+              a UI you're designing, just for a model instead of a human. Their line-windowed file viewer with
+              built-in linting was the difference between failing and passing real tasks.</p>
+            </div>
+            <div class="wy-col">
+              <h4>Why it exists</h4>
+              <p>The error message a tool returns is a design surface, not an afterthought — a vague
+                <code>Error: failed</code> sends the model down a dead end; a precise
+                <code>Error: line 42 not found, file has 30 lines</code> lets it self-correct next turn.</p>
+            </div>
+          </div>
+          <div class="build">
+            <h4>🛠 Build</h4>
+            <ul>
+              <li>Add three real tools with JSON schemas: <code>read_file</code>, <code>write_file</code>,
+                <code>run_shell</code>. Use your model provider's native tool-use, not text tags.</li>
+              <li>Deliberately ship one tool with a bad error message (just <code>"error"</code>) and one with a
+                precise one. Run the same failing task through both, count turns-to-recovery.</li>
+              <li>Then run Anthropic's <strong>Prototype → Evaluate → Collaborate</strong> loop: paste your tool
+                description back to the model and ask it to critique and rewrite its own tool spec.</li>
+            </ul>
+            <div class="verify"><b>check</b> The precise-error version recovers in fewer turns than the vague one,
+              on the same failing input — you've measured, not assumed, that tool design matters.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 03 EVAL HARNESS -->
+      <section class="mod" id="m03">
+        <div class="mod-head">
+          <div class="mod-num">03</div>
+          <div>
+            <h2>Eval harness — build this early</h2>
+            <div class="tags"><span class="tag sensor">sensor</span><span class="tag sensor">computational</span></div>
+          </div>
+          <div class="check-row"><input type="checkbox" data-mod="03" id="c03"><label for="c03">built</label></div>
+        </div>
+        <div class="block">
+          <div class="wy">
+            <div class="wy-col">
+              <h4>What</h4>
+              <p>Five to fifty hand-written tasks, each with an unambiguous pass/fail check, run against your loop.
+              Three grader types: code-based (fast, brittle), model-based (flexible, noisy), human (slow, gold
+              standard). Grade the <em>outcome</em>, not the path the agent took to get there.</p>
+            </div>
+            <div class="wy-col">
+              <h4>Why it exists</h4>
+              <p>Every module from here on changes your agent's behavior. Without this you're guessing whether a
+              change helped. Anthropic's own eval guidance puts this before, not after, the fancy features —
+              you can't tune what you can't score.</p>
+            </div>
+          </div>
+          <div class="build">
+            <h4>🛠 Build</h4>
+            <ul>
+              <li>Write 5 tasks derived from real failures you've hit (not synthetic ones) — each with an exact
+                expected outcome and a code-based checker function.</li>
+              <li>A runner script that fires all 5 through your module-02 agent and prints a pass/fail table.</li>
+            </ul>
+            <div class="verify"><b>check</b> Intentionally revert your module-02 tool-description improvement and
+              re-run the suite — the score should visibly drop. If it doesn't, your eval isn't sensitive enough yet.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 04 CONTEXT MANAGEMENT -->
+      <section class="mod" id="m04">
+        <div class="mod-head">
+          <div class="mod-num">04</div>
+          <div>
+            <h2>Context management</h2>
+            <div class="tags"><span class="tag guide">guide</span><span class="tag guide">computational</span></div>
+          </div>
+          <div class="check-row"><input type="checkbox" data-mod="04" id="c04"><label for="c04">built</label></div>
+        </div>
+        <div class="block">
+          <div class="wy">
+            <div class="wy-col">
+              <h4>What</h4>
+              <p>Three techniques: <strong>compaction</strong> (summarize older turns as you approach the limit,
+              discard stale tool output), <strong>structured notes</strong> (durable facts written to disk, outside
+              the window entirely), and <strong>just-in-time retrieval</strong> (fetch on demand instead of
+              preloading). Separately: <strong>prompt caching</strong> — a prefix-matched cache, up to 4 breakpoints
+              per request, ~10× cheaper on a hit.</p>
+            </div>
+            <div class="wy-col">
+              <h4>Why it exists</h4>
+              <p>A nominal 200K-token window degrades in practice past roughly 60–80K effective tokens. Long tasks
+              silently get dumber long before they hit the hard limit unless something actively curates what stays.</p>
+            </div>
+          </div>
+          <div class="build">
+            <h4>🛠 Build</h4>
+            <ul>
+              <li>Add a token counter. Past a threshold (e.g. 8K tokens for testing), summarize the oldest half of
+                the transcript into one condensed message and splice it in place of the originals.</li>
+              <li>Add cache-breakpoint markers around your system prompt / tool schemas if your API supports it;
+                log token cost before and after.</li>
+            </ul>
+            <pre><code>if count_tokens(messages) > THRESHOLD:
+    old, recent = split(messages, keep_last=N)
+    summary = call_model([*old, {"role":"user","content":"Summarize the above concisely."}])
+    messages = [summary_msg(summary), *recent]</code></pre>
+            <div class="verify"><b>check</b> Run a task long enough to have blown the threshold pre-module-04;
+              confirm it now completes, and your cost log shows cache hits on repeated turns.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 05 PERMISSIONS -->
+      <section class="mod" id="m05">
+        <div class="mod-head">
+          <div class="mod-num">05</div>
+          <div>
+            <h2>Permissions &amp; sandboxing</h2>
+            <div class="tags"><span class="tag sensor">sensor</span><span class="tag sensor">computational</span></div>
+          </div>
+          <div class="check-row"><input type="checkbox" data-mod="05" id="c05"><label for="c05">built</label></div>
+        </div>
+        <div class="block">
+          <div class="wy">
+            <div class="wy-col">
+              <h4>What</h4>
+              <p>Claude Code's real shipped model: filesystem <em>reads</em> are deny-then-allow (open by default,
+              selectively blocked); <em>writes</em> are allow-only (closed by default, selectively opened). Network
+              is allow-only through a local proxy enforcing a domain list. Nothing reaches disk or network
+              unmediated.</p>
+            </div>
+            <div class="wy-col">
+              <h4>Why it exists</h4>
+              <p>An unsupervised agent that can write anywhere and call anything is a liability, not a feature.
+              Anthropic reports this exact pattern cut permission-prompt interruptions by 84% in production —
+              tight rules mean fewer stops, not more.</p>
+            </div>
+          </div>
+          <div class="build">
+            <h4>🛠 Build</h4>
+            <ul>
+              <li>Wrap <code>write_file</code> and <code>run_shell</code> in an explicit allow-list gate
+                (path prefix / regex check) that runs before the tool executes, not after.</li>
+              <li>Block outbound network calls unless the target domain is on an allow-list; return the model a
+                clear, actionable denial reason, not a bare failure.</li>
+              <li>Log every gate decision (allowed / denied, and why).</li>
+            </ul>
+            <div class="verify"><b>check</b> Ask the agent to write outside its sandboxed directory. Confirm it's
+              blocked, and that the model receives enough information to propose a compliant alternative on its
+              own next turn.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 06 SUB-AGENTS -->
+      <section class="mod" id="m06">
+        <div class="mod-head">
+          <div class="mod-num">06</div>
+          <div>
+            <h2>Sub-agent fan-out</h2>
+            <div class="tags"><span class="tag structure">structure</span></div>
+          </div>
+          <div class="check-row"><input type="checkbox" data-mod="06" id="c06"><label for="c06">built</label></div>
+        </div>
+        <div class="block">
+          <div class="wy">
+            <div class="wy-col">
+              <h4>What</h4>
+              <p>Split a task across workers that each get a genuinely fresh, isolated context — no parent history,
+              no sibling history — and return only a condensed summary upward. This is the exact mechanism behind
+              the fork/subagent tool available in this very session.</p>
+            </div>
+            <div class="wy-col">
+              <h4>Why it exists</h4>
+              <p>Context isolation beats context sharing. A parent that reads every subagent's full transcript
+              re-inherits all their token cost and noise; a parent that reads only their summaries stays cheap and
+              focused no matter how much work happened underneath.</p>
+            </div>
+          </div>
+          <div class="build">
+            <h4>🛠 Build</h4>
+            <ul>
+              <li>Spawn 2–3 independent copies of your module-02 loop, each given a distinct slice of one bigger
+                task and its own empty message history.</li>
+              <li>Aggregate only their final one-paragraph summaries into the parent's context — never their full
+                transcripts.</li>
+            </ul>
+            <div class="verify"><b>check</b> Compare parent-process token usage against doing the same task in one
+              shared conversation. The fan-out version's parent context should stay flat regardless of how much
+              work the workers did.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 07 MEMORY -->
+      <section class="mod" id="m07">
+        <div class="mod-head">
+          <div class="mod-num">07</div>
+          <div>
+            <h2>Persistent memory</h2>
+            <div class="tags"><span class="tag guide">guide</span><span class="tag guide">computational</span></div>
+          </div>
+          <div class="check-row"><input type="checkbox" data-mod="07" id="c07"><label for="c07">built</label></div>
+        </div>
+        <div class="block">
+          <div class="wy">
+            <div class="wy-col">
+              <h4>What</h4>
+              <p>Durable facts written to disk outside any single conversation, plus a small index file pointing
+              into them — structurally identical to the <code>MEMORY.md</code> + per-topic-file pattern already
+              indexing facts for this very assistant.</p>
+            </div>
+            <div class="wy-col">
+              <h4>Why it exists</h4>
+              <p>A process restart or a fresh conversation shouldn't mean total amnesia. Long-running agent designs
+              split cleanly into a short-lived reasoning context and a long-lived, append-only memory store that
+              survives it.</p>
+            </div>
+          </div>
+          <div class="build">
+            <h4>🛠 Build</h4>
+            <ul>
+              <li>A <code>memory/</code> directory. On a notable fact, write a small file plus one index line;
+                at the start of every new run, load the index (not every file) into the system prompt.</li>
+              <li>Kill the process. Start a brand-new conversation with empty history. Ask the agent something only
+                answerable from a fact you stored last run.</li>
+            </ul>
+            <div class="verify"><b>check</b> The fresh process recalls the fact correctly without it appearing
+              anywhere in the new conversation's own messages.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 08 MCP -->
+      <section class="mod" id="m08">
+        <div class="mod-head">
+          <div class="mod-num">08</div>
+          <div>
+            <h2>Tool ecosystem via MCP</h2>
+            <div class="tags"><span class="tag structure">structure</span></div>
+          </div>
+          <div class="check-row"><input type="checkbox" data-mod="08" id="c08"><label for="c08">built</label></div>
+        </div>
+        <div class="block">
+          <div class="wy">
+            <div class="wy-col">
+              <h4>What</h4>
+              <p>The Model Context Protocol standardizes the tool boundary itself, so a tool built once works from
+              any compliant client. Past a handful of tools, the <strong>code-execution-with-MCP</strong> pattern —
+              expose tools as an explorable code API the model writes small programs against, instead of preloading
+              every schema — cut one real case from 150K to 2K context tokens.</p>
+            </div>
+            <div class="wy-col">
+              <h4>Why it exists</h4>
+              <p>Ad hoc tools don't compose across projects or agents. A standard protocol means the toy server you
+              build today is usable from Claude Code, an MCP inspector, or your own harness — the same artifact,
+              three consumers.</p>
+            </div>
+          </div>
+          <div class="build">
+            <h4>🛠 Build</h4>
+            <ul>
+              <li>Build one real stdio MCP server (official SDK) exposing two small tools.</li>
+              <li>Connect it live with <code>@modelcontextprotocol/inspector</code> and poke at it by hand.</li>
+              <li>Connect your own module-02 loop to it as an MCP client instead of a hardcoded tool.</li>
+            </ul>
+            <div class="verify"><b>check</b> The identical server works both from the inspector and from your own
+              loop with zero server-side changes — that portability is the entire point of the protocol.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 09 HARDENING -->
+      <section class="mod" id="m09">
+        <div class="mod-head">
+          <div class="mod-num">09</div>
+          <div>
+            <h2>Production hardening</h2>
+            <div class="tags"><span class="tag sensor">sensor</span><span class="tag sensor">computational</span></div>
+          </div>
+          <div class="check-row"><input type="checkbox" data-mod="09" id="c09"><label for="c09">built</label></div>
+        </div>
+        <div class="block">
+          <div class="wy">
+            <div class="wy-col">
+              <h4>What</h4>
+              <p>Idempotency keys derived from the underlying problem's state (not the trigger), so retries and
+              re-deliveries don't double-act. A hard per-run and per-window token/cost ceiling that halts and
+              escalates rather than looping silently. Metering every invocation — tokens, turns, outcome — so burn
+              is visible on a dashboard, not the bill.</p>
+            </div>
+            <div class="wy-col">
+              <h4>Why it exists</h4>
+              <p>This is, near-verbatim, the guardrail list already sitting in your own CLAUDE.md — written after a
+              real incident where an agent invoked as a pure function of a repeating alert burned ~11M tokens/day
+              re-investigating the same unchanged state. The industry converged on the identical fix independently
+              in 2026: dedupe on the problem, not the event.</p>
+            </div>
+          </div>
+          <div class="build">
+            <h4>🛠 Build</h4>
+            <ul>
+              <li>Hash each trigger's underlying problem-state; skip re-invoking the loop if that hash hasn't
+                changed since the last run.</li>
+              <li>Add a max-turn and max-cost circuit breaker that raises instead of looping past it.</li>
+              <li>Log every invocation's tokens/cost/outcome to a file.</li>
+            </ul>
+            <div class="verify"><b>check</b> Simulate the same unchanged "alert" firing 50 times in a row. Assert
+              total token spend stays flat after the first invocation — this is the steady-state cost test the
+              canary incident was missing.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 10 CAPSTONE -->
+      <section class="mod capstone" id="m10" style="border-radius:8px; padding:32px 28px; margin-top:10px;">
+        <div class="mod-head">
+          <div class="mod-num" style="color:var(--accent);">10</div>
+          <div>
+            <h2>Capstone: a coding agent in a box</h2>
+            <div class="tags"><span class="tag guide">guide</span><span class="tag sensor">sensor</span><span class="tag structure">structure</span></div>
+          </div>
+          <div class="check-row"><input type="checkbox" data-mod="10" id="c10"><label for="c10">built</label></div>
+        </div>
+        <div class="block" style="margin-left:0;">
+          <div class="wy">
+            <div class="wy-col">
+              <h4>What</h4>
+              <p>Every prior module wired into one system: loop (01) + well-designed tools (02) + sandboxed
+              permissions (05) + sub-agents (06) + persistent memory (07), scored by the eval harness (03) you
+              built in week one, hardened per module 09. This is, structurally, the same shape as Claude Code,
+              Codex CLI, and SWE-agent.</p>
+            </div>
+            <div class="wy-col">
+              <h4>Why it exists</h4>
+              <p>Integration is where harness bugs actually live — a permission gate that blocks a subagent's
+              legitimate write, a compaction step that drops a fact your memory system needed. You can't find those
+              by testing modules in isolation.</p>
+            </div>
+          </div>
+          <div class="build">
+            <h4>🛠 Build</h4>
+            <ul>
+              <li>Pick 5 real, small bugs (your own repo, or a handful from SWE-bench-lite).</li>
+              <li>Point your full harness at each; score pass/fail with your module-03 eval runner.</li>
+              <li>Run the same 5 tasks through a naive one-shot call with no tools, no loop, as a baseline.</li>
+            </ul>
+            <div class="verify"><b>check</b> Report pass@1 for both. The gap between them is the number that
+              proves your harness earned its complexity — not a feeling, a score.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- FIELD NOTES -->
+      <section id="ref" style="padding:44px 0 10px;">
+        <h2 class="ref-title">Field notes</h2>
+        <p style="color:var(--ink-soft); max-width:62ch; margin-top:0;">Real, inspectable systems worth reading
+          alongside each module — not for the whole thing, but for the one part they each do unusually well.</p>
+
+        <div class="ref-grid">
+          <div class="ref-row">
+            <div class="name">Aider</div>
+            <div class="desc">Fully open, MIT. Read the repo-map algorithm for module 04 — a tree-sitter dependency
+              graph ranked to fit a token budget.
+              <a href="https://aider.chat/docs/repomap.html" target="_blank">aider.chat/docs/repomap.html</a></div>
+          </div>
+          <div class="ref-row">
+            <div class="name">SWE-agent</div>
+            <div class="desc">Fully open, MIT. The ACI docs are written explicitly to teach module 02's lesson.
+              <a href="https://github.com/princeton-nlp/SWE-agent/blob/main/docs/background/aci.md" target="_blank">github.com/princeton-nlp/SWE-agent</a></div>
+          </div>
+          <div class="ref-row">
+            <div class="name">OpenHands</div>
+            <div class="desc">Fully open. Study the event-stream architecture for module 06/08 — every actor only
+              reads/appends one chronological log, so any run is replayable by construction.
+              <a href="https://docs.openhands.dev/openhands/usage/architecture/runtime" target="_blank">docs.openhands.dev</a></div>
+          </div>
+          <div class="ref-row">
+            <div class="name">sandbox-runtime</div>
+            <div class="desc">Anthropic's open-sourced sandbox for module 05 — small, modular, realistic to run
+              locally end-to-end.
+              <a href="https://github.com/anthropic-experimental/sandbox-runtime" target="_blank">github.com/anthropic-experimental/sandbox-runtime</a></div>
+          </div>
+          <div class="ref-row">
+            <div class="name">Inspect AI</div>
+            <div class="desc">UK AISI, MIT. Real eval infra for module 03/10 — sandboxed execution, a trace
+              viewer, 200+ prebuilt evals including SWE-bench.
+              <a href="https://github.com/UKGovernmentBEIS/inspect_ai" target="_blank">github.com/UKGovernmentBEIS/inspect_ai</a></div>
+          </div>
+          <div class="ref-row">
+            <div class="name">awesome-harness-engineering</div>
+            <div class="desc">The curated map this whole course was checked against — use it once you want to go
+              deeper than any one module here.
+              <a href="https://github.com/ai-boost/awesome-harness-engineering" target="_blank">github.com/ai-boost/awesome-harness-engineering</a></div>
+          </div>
+        </div>
+
+        <h3 style="font-size:19px; font-weight:700; margin:32px 0 4px;">Core reading, in build order</h3>
+        <ul class="reading-list">
+          <li><span class="dot">01</span> <a href="https://arxiv.org/abs/2210.03629" target="_blank">ReAct (Yao et al., 2022)</a> — the loop pattern every harness above still runs on.</li>
+          <li><span class="dot">02</span> <a href="https://www.anthropic.com/engineering/writing-tools-for-agents" target="_blank">Writing Effective Tools for AI Agents (Anthropic)</a></li>
+          <li><span class="dot">03</span> <a href="https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents" target="_blank">Demystifying Evals for AI Agents (Anthropic)</a></li>
+          <li><span class="dot">03</span> <a href="https://arxiv.org/abs/2310.06770" target="_blank">SWE-bench (Jimenez et al., 2023)</a> — the standard for "did it actually fix the issue."</li>
+          <li><span class="dot">04</span> <a href="https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents" target="_blank">Effective Context Engineering for AI Agents (Anthropic)</a></li>
+          <li><span class="dot">05</span> <a href="https://claude.com/blog/beyond-permission-prompts-making-claude-code-more-secure-and-autonomous" target="_blank">Beyond Permission Prompts (Claude)</a></li>
+          <li><span class="dot">08</span> <a href="https://www.anthropic.com/engineering/code-execution-with-mcp" target="_blank">Code Execution with MCP (Anthropic)</a></li>
+          <li><span class="dot">09</span> <a href="https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents" target="_blank">Effective Harnesses for Long-Running Agents (Anthropic)</a></li>
+          <li><span class="dot">·</span> <a href="https://martinfowler.com/articles/harness-engineering.html" target="_blank">Harness engineering for coding agent users (Fowler/Böckeler)</a> — the guides/sensors framing used throughout this course.</li>
+        </ul>
+      </section>
+
+    </main>
+  </div>
+
+  <footer>
+    Accurate as of September 1, 2026 — built from a research pass across Anthropic, OpenAI, Fowler/Böckeler,
+    Princeton SWE-agent, OpenHands, and UK AISI's Inspect AI. Names, links, and version details may drift; the
+    architectural lessons underneath them age slower. Progress checkboxes save locally in this browser only.
+  </footer>
+
+</div>
+
+<script>
+(function(){
+  const KEY = 'harness-course-progress-v1';
+  const modIds = ['00','01','02','03','04','05','06','07','08','09','10'];
+  let done = [];
+  try { done = JSON.parse(localStorage.getItem(KEY) || '[]'); } catch(e) { done = []; }
+
+  function paint(){
+    modIds.forEach(id => {
+      const cb = document.getElementById('c'+id);
+      if (cb) cb.checked = done.includes(id);
+      const railLink = document.querySelector('.rail-list a[data-mod="'+id+'"]');
+      if (railLink) railLink.classList.toggle('done', done.includes(id));
+    });
+    const pct = Math.round((done.length / modIds.length) * 100);
+    const fill = document.getElementById('progressFill');
+    const label = document.getElementById('progressLabel');
+    if (fill) fill.style.width = pct + '%';
+    if (label) label.textContent = done.length + ' / ' + modIds.length + ' modules built';
+  }
+
+  modIds.forEach(id => {
+    const cb = document.getElementById('c'+id);
+    if (!cb) return;
+    cb.addEventListener('change', () => {
+      try {
+        if (cb.checked) { if (!done.includes(id)) done.push(id); }
+        else { done = done.filter(x => x !== id); }
+        localStorage.setItem(KEY, JSON.stringify(done));
+      } catch(e) {}
+      paint();
+    });
+  });
+
+  paint();
+})();
+</script>

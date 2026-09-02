@@ -205,6 +205,26 @@ section.mod:last-of-type{border-bottom:none;}
 .build ul{margin:0 0 12px; padding-left:18px;}
 .build li{margin-bottom:5px; font-size:14px;}
 .build li::marker{color:var(--signal);}
+.build .goal{
+  font-size:14px; margin:0 0 14px; padding:9px 11px; border-radius:5px;
+  background:var(--accent-soft); color:var(--ink);
+}
+.build .goal b{
+  font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:.09em; text-transform:uppercase;
+  color:var(--accent); display:block; margin-bottom:3px;
+}
+.build .env-label{
+  font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:.09em; text-transform:uppercase;
+  color:var(--ink-faint); display:block; margin:2px 0 6px;
+}
+.build .steps-label{
+  font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:.09em; text-transform:uppercase;
+  color:var(--ink-faint); display:block; margin:14px 0 6px;
+}
+.build ol{margin:0 0 12px; padding-left:22px;}
+.build ol li{margin-bottom:8px; font-size:14px;}
+.build ol li::marker{color:var(--ink-faint); font-family:'IBM Plex Mono',monospace; font-weight:600; font-size:12.5px;}
+.capstone .build .goal{background:var(--card);}
 pre{
   background:var(--code-bg); color:var(--code-ink); border-radius:5px;
   padding:12px 14px; overflow-x:auto; font-size:12.5px; line-height:1.55; margin:0 0 10px;
@@ -334,15 +354,29 @@ footer{padding:40px 0 10px; color:var(--ink-faint); font-size:12.5px; border-top
           </div>
           <div class="build">
             <h4>🔍 Field exercise</h4>
-            <ul>
-              <li>Open your own <code>~/.claude/CLAUDE.md</code> and find the "Autonomous agent orchestration"
-                guardrails section. Tag each of its 9 rules as GUIDE or SENSOR, and COMPUTATIONAL or INFERENTIAL.</li>
-              <li>Notice this session's own permission-mode system, its memory files under
-                <code>memory/MEMORY.md</code>, and the fork you could spawn to research this — each is a harness
-                component you're about to build a miniature of yourself.</li>
-            </ul>
+            <div class="goal"><b>Goal</b> A one-page personal map of the guide/sensor, computational/inferential
+              taxonomy, with a real example from a system you already use in each of the four boxes — so the
+              vocabulary sticks to something concrete before module 01 asks you to build one from scratch.</div>
+            <span class="env-label">Setup</span>
+            <p style="margin:0 0 10px; font-size:14px;">None — no code, no installs. Just a text editor or a sheet
+              of paper and access to the Claude Code session you're already using.</p>
+            <span class="steps-label">Steps</span>
+            <ol>
+              <li>Draw a 2×2 grid: rows <code>GUIDE</code> / <code>SENSOR</code>, columns
+                <code>COMPUTATIONAL</code> / <code>INFERENTIAL</code>.</li>
+              <li>Open <code>~/.claude/CLAUDE.md</code> in a text editor and find the "Autonomous agent
+                orchestration" guardrails section near the bottom.</li>
+              <li>For each of its 9 numbered rules, decide: does it steer behavior <em>before</em> the model acts
+                (a guide) or catch a problem <em>after</em> (a sensor)? Is the check itself a deterministic bit of
+                code (computational) or does it require judgment/an LLM call (inferential)? Write the rule number
+                into the matching box.</li>
+              <li>Do the same for two things this Claude Code session already does to you: the permission prompt
+                that appears before a risky command, and the auto-generated memory files under
+                <code>memory/MEMORY.md</code>.</li>
+              <li>You should end with at least one real example filled into all four boxes of the grid.</li>
+            </ol>
             <div class="verify"><b>check</b> You can point at one real mechanism in this environment for each of
-              guide/sensor and computational/inferential — four concrete examples, not four definitions.</div>
+              the four boxes — four concrete examples, not four definitions restated in your own words.</div>
           </div>
         </div>
       </section>
@@ -374,12 +408,33 @@ footer{padding:40px 0 10px; color:var(--ink-faint); font-size:12.5px; border-top
           </div>
           <div class="build">
             <h4>🛠 Build</h4>
-            <ul>
-              <li>One script, one hardcoded tool (a calculator or <code>read_file</code>). No SDK tool-calling yet —
-                have the model emit a plain-text tag like <code>&lt;tool&gt;add(2,3)&lt;/tool&gt;</code> and parse it
-                yourself with a regex. Feel the fragility on purpose.</li>
-              <li>Loop until the model produces a final-answer tag with no tool call in it.</li>
-            </ul>
+            <div class="goal"><b>Goal</b> One script, <code>agent.py</code>, that holds a multi-turn conversation
+              with the model, recognizes when its reply is asking to run a tool (by spotting a plain-text tag you
+              invented yourself), actually runs that tool, and stops only when the model answers with no tag at
+              all. No SDK tool-calling feature yet — that's module 02. Here you parse plain text by hand so you
+              feel exactly why that's fragile.</div>
+            <span class="env-label">Environment setup</span>
+            <pre><code>mkdir -p ~/harness-course/01-bare-loop &amp;&amp; cd ~/harness-course/01-bare-loop
+python3 -m venv .venv &amp;&amp; source .venv/bin/activate
+pip3 install anthropic
+export ANTHROPIC_API_KEY=sk-...          # from console.claude.com → API Keys
+printf '4\n15\n23\n8\n' &gt; fileA.txt      # a test fixture with a known answer (sums to 50)</code></pre>
+            <span class="steps-label">Steps</span>
+            <ol>
+              <li>Create <code>agent.py</code> in that folder.</li>
+              <li>Write a <strong>system prompt</strong> string that tells the model the exact tag format to use
+                when it wants a tool, e.g. <code>&lt;tool&gt;read_file(fileA.txt)&lt;/tool&gt;</code>, and says
+                plainly: "if you don't need a tool, just answer in plain text, with no tag."</li>
+              <li>Write <code>call_model(messages)</code>: one call to <code>client.messages.create(...)</code>
+                passing your system prompt and the message list, returning the reply text.</li>
+              <li>Write <code>parse(reply)</code>: use a regex (e.g. <code>r"&lt;tool&gt;(\w+)\(([^)]*)\)&lt;/tool&gt;"</code>)
+                to pull out <code>(name, args)</code> if a tag is present, or return <code>None</code> if it isn't.</li>
+              <li>Write <code>run_tool(name, args)</code>: for <code>read_file</code>, actually open and return the
+                named file's contents; for <code>add</code>, actually sum the numeric args. Anything else, return a
+                plain string saying so.</li>
+              <li>Wire the loop below, save, and run <code>python3 agent.py</code>.</li>
+              <li>Ask it: <em>"Read fileA.txt, then compute the sum of the numbers in it."</em></li>
+            </ol>
             <pre><code>while True:
     reply = call_model(messages)
     if "&lt;tool&gt;" in reply:
@@ -388,8 +443,9 @@ footer{padding:40px 0 10px; color:var(--ink-faint); font-size:12.5px; border-top
         messages.append({"role":"user","content":f"OBSERVATION: {result}"})
     else:
         return reply</code></pre>
-            <div class="verify"><b>check</b> Ask a question needing two sequential tool calls (e.g. "read file A,
-              then compute the sum of the numbers in it"). Confirm the loop runs exactly twice before stopping.</div>
+            <div class="verify"><b>check</b> You should see the loop fire exactly twice — one tool call, one final
+              answer — and the final answer should say 50. If the model wraps its tag in extra prose and your regex
+              misses it, that's not a bug in the exercise — that's the fragility this module exists to make you feel.</div>
           </div>
         </div>
       </section>
@@ -422,16 +478,35 @@ footer{padding:40px 0 10px; color:var(--ink-faint); font-size:12.5px; border-top
           </div>
           <div class="build">
             <h4>🛠 Build</h4>
-            <ul>
-              <li>Add three real tools with JSON schemas: <code>read_file</code>, <code>write_file</code>,
-                <code>run_shell</code>. Use your model provider's native tool-use, not text tags.</li>
-              <li>Deliberately ship one tool with a bad error message (just <code>"error"</code>) and one with a
-                precise one. Run the same failing task through both, count turns-to-recovery.</li>
-              <li>Then run Anthropic's <strong>Prototype → Evaluate → Collaborate</strong> loop: paste your tool
-                description back to the model and ask it to critique and rewrite its own tool spec.</li>
-            </ul>
-            <div class="verify"><b>check</b> The precise-error version recovers in fewer turns than the vague one,
-              on the same failing input — you've measured, not assumed, that tool design matters.</div>
+            <div class="goal"><b>Goal</b> The same loop as module 01, but the model now calls tools through your
+              provider's real function-calling feature instead of a text tag you invented — and you'll have hard
+              numbers showing that a tool's error message changes how fast the model recovers from a mistake.</div>
+            <span class="env-label">Environment setup</span>
+            <pre><code>mkdir -p ~/harness-course/02-tool-interfaces &amp;&amp; cd ~/harness-course/02-tool-interfaces
+cp ../01-bare-loop/fileA.txt .
+source ../01-bare-loop/.venv/bin/activate   # reuse the venv from module 01</code></pre>
+            <span class="steps-label">Steps</span>
+            <ol>
+              <li>Define 3 tools as JSON Schema objects for the <code>tools=[...]</code> parameter of
+                <code>messages.create</code>: <code>read_file(path)</code>, <code>write_file(path, content)</code>,
+                <code>run_shell(command)</code>.</li>
+              <li>Replace your module-01 regex loop: after each call, check <code>response.stop_reason</code> — if
+                it's <code>"tool_use"</code>, find the <code>tool_use</code> block(s) in <code>response.content</code>
+                and read <code>.name</code> / <code>.input</code> directly (no parsing needed, the SDK already did it).</li>
+              <li>Reply with a <code>tool_result</code> content block containing your tool's output, keyed to the
+                tool call's <code>id</code>.</li>
+              <li>Make two versions of <code>read_file</code>'s failure path: version A returns the bare string
+                <code>"error"</code> when the file doesn't exist; version B returns something like
+                <code>"File 'nope.txt' not found. Files available here: fileA.txt"</code>.</li>
+              <li>Ask the agent to read a file that doesn't exist, once against version A and once against version
+                B. Count how many turns it takes each version to either recover (try a real filename) or give up.</li>
+              <li>Now do Anthropic's <strong>Prototype → Evaluate → Collaborate</strong> step: paste your
+                <code>read_file</code> tool's JSON Schema description back to the model in a fresh conversation and
+                ask it to critique the description and rewrite it. Swap in its rewrite and re-run step 5.</li>
+            </ol>
+            <div class="verify"><b>check</b> Version B (the precise error) recovers in fewer turns than version A
+              on the same failing input, and the model's self-rewritten description performs at least as well as
+              yours — you've now measured, not assumed, that tool design changes agent behavior.</div>
           </div>
         </div>
       </section>
@@ -463,13 +538,34 @@ footer{padding:40px 0 10px; color:var(--ink-faint); font-size:12.5px; border-top
           </div>
           <div class="build">
             <h4>🛠 Build</h4>
-            <ul>
-              <li>Write 5 tasks derived from real failures you've hit (not synthetic ones) — each with an exact
-                expected outcome and a code-based checker function.</li>
-              <li>A runner script that fires all 5 through your module-02 agent and prints a pass/fail table.</li>
-            </ul>
-            <div class="verify"><b>check</b> Intentionally revert your module-02 tool-description improvement and
-              re-run the suite — the score should visibly drop. If it doesn't, your eval isn't sensitive enough yet.</div>
+            <div class="goal"><b>Goal</b> A folder of 5 small tasks plus one runner script,
+              <code>run_evals.py</code>, that fires each task through your module-02 agent and prints a pass/fail
+              table — so from here on, "did that change help?" has a number attached instead of a guess.</div>
+            <span class="env-label">Environment setup</span>
+            <pre><code>mkdir -p ~/harness-course/03-eval-harness &amp;&amp; cd ~/harness-course/03-eval-harness
+cp ../02-tool-interfaces/*.py .
+cp ../01-bare-loop/fileA.txt .
+source ../01-bare-loop/.venv/bin/activate   # no new packages needed — plain Python is enough</code></pre>
+            <span class="steps-label">Steps</span>
+            <ol>
+              <li>Write down 5 short tasks in plain English and their exact expected outcome. Reuse real ones from
+                modules 01–02 if you have them (e.g. "read fileA.txt, sum it → 50"; "read a nonexistent file →
+                agent reports the error and doesn't crash").</li>
+              <li>For each task, write a tiny Python function <code>check_N(final_answer: str) -&gt; bool</code>
+                that returns <code>True</code> only if the answer is actually correct (e.g.
+                <code>"50" in final_answer</code>).</li>
+              <li>Create <code>tasks.py</code>: a list of <code>{"prompt": ..., "check": check_fn}</code> dicts, one
+                per task.</li>
+              <li>Create <code>run_evals.py</code>: import your module-02 <code>run()</code> function, loop over
+                <code>tasks.py</code>, call <code>run(prompt)</code>, apply the matching <code>check</code>, and
+                print a table like <code>PASS  task 1</code> / <code>FAIL  task 3</code>.</li>
+              <li>Run it once. Record the score as your baseline (e.g. "5/5" or "4/5").</li>
+              <li>Now deliberately revert the tool-description improvement you made in module 02 back to the vague
+                version, and re-run <code>run_evals.py</code>.</li>
+            </ol>
+            <div class="verify"><b>check</b> The score visibly drops after the revert. If it doesn't, your 5 tasks
+              aren't sensitive enough to the thing you're trying to measure — pick a task that actually exercises
+              the failure path you improved.</div>
           </div>
         </div>
       </section>
@@ -502,18 +598,42 @@ footer{padding:40px 0 10px; color:var(--ink-faint); font-size:12.5px; border-top
           </div>
           <div class="build">
             <h4>🛠 Build</h4>
-            <ul>
-              <li>Add a token counter. Past a threshold (e.g. 8K tokens for testing), summarize the oldest half of
-                the transcript into one condensed message and splice it in place of the originals.</li>
-              <li>Add cache-breakpoint markers around your system prompt / tool schemas if your API supports it;
-                log token cost before and after.</li>
-            </ul>
-            <pre><code>if count_tokens(messages) > THRESHOLD:
-    old, recent = split(messages, keep_last=N)
+            <div class="goal"><b>Goal</b> A version of your loop that survives a task long enough to have blown up
+              module 02's context — because it compacts old turns into a summary before that happens — and a
+              printed log showing when compaction fires and how much cheaper repeated calls get with caching.</div>
+            <span class="env-label">Environment setup</span>
+            <pre><code>mkdir -p ~/harness-course/04-context &amp;&amp; cd ~/harness-course/04-context
+cp ../02-tool-interfaces/*.py .
+source ../01-bare-loop/.venv/bin/activate
+printf '11\n7\n19\n' &gt; fileB.txt
+printf '3\n42\n5\n1\n' &gt; fileC.txt</code></pre>
+            <span class="steps-label">Steps</span>
+            <ol>
+              <li>Every response from the Anthropic API includes token counts on <code>response.usage</code>. After
+                each <code>call_model()</code> call, add <code>response.usage.input_tokens</code> to a running
+                total and print it.</li>
+              <li>Pick a low threshold for testing, e.g. <code>THRESHOLD = 3000</code>, so you can trigger
+                compaction without needing a huge real task.</li>
+              <li>When the running total crosses <code>THRESHOLD</code>: take every message except the last 2, send
+                them to the model with the instruction "Summarize the above conversation concisely, keeping any
+                facts still needed to finish the task," and replace them in your <code>messages</code> list with
+                that one summary message.</li>
+              <li>Give it a task that forces enough back-and-forth to cross your threshold: "Read fileA.txt,
+                fileB.txt, and fileC.txt one at a time, then tell me the sum of all three files combined" (answer:
+                50 + 37 + 51 = 138).</li>
+              <li>Print a line every time compaction actually fires, so you can watch it happen mid-task.</li>
+              <li>(Optional, needs a paid API key with usage past the free tier) Add
+                <code>cache_control: {"type": "ephemeral"}</code> to your system prompt block and compare
+                <code>response.usage.cache_read_input_tokens</code> across repeated runs.</li>
+            </ol>
+            <pre><code>if running_total_tokens > THRESHOLD:
+    old, recent = messages[:-2], messages[-2:]
     summary = call_model([*old, {"role":"user","content":"Summarize the above concisely."}])
-    messages = [summary_msg(summary), *recent]</code></pre>
-            <div class="verify"><b>check</b> Run a task long enough to have blown the threshold pre-module-04;
-              confirm it now completes, and your cost log shows cache hits on repeated turns.</div>
+    messages = [{"role":"user","content":f"[compacted summary] {summary}"}, *recent]
+    print("[compaction fired]")</code></pre>
+            <div class="verify"><b>check</b> The three-file task completes with the correct total (138) even though
+              your running total crossed <code>THRESHOLD</code> partway through — and your console shows at least
+              one "[compaction fired]" line before the final answer.</div>
           </div>
         </div>
       </section>
@@ -546,16 +666,33 @@ footer{padding:40px 0 10px; color:var(--ink-faint); font-size:12.5px; border-top
           </div>
           <div class="build">
             <h4>🛠 Build</h4>
-            <ul>
-              <li>Wrap <code>write_file</code> and <code>run_shell</code> in an explicit allow-list gate
-                (path prefix / regex check) that runs before the tool executes, not after.</li>
-              <li>Block outbound network calls unless the target domain is on an allow-list; return the model a
-                clear, actionable denial reason, not a bare failure.</li>
-              <li>Log every gate decision (allowed / denied, and why).</li>
-            </ul>
-            <div class="verify"><b>check</b> Ask the agent to write outside its sandboxed directory. Confirm it's
-              blocked, and that the model receives enough information to propose a compliant alternative on its
-              own next turn.</div>
+            <div class="goal"><b>Goal</b> Your <code>write_file</code> and <code>run_shell</code> tools refuse to
+              act outside one folder you designate as the sandbox, tell the model exactly why when they refuse,
+              and log every allow/deny decision — so nothing outside that folder is ever touched, even if the
+              model asks for it.</div>
+            <span class="env-label">Environment setup</span>
+            <pre><code>mkdir -p ~/harness-course/05-permissions/sandbox &amp;&amp; cd ~/harness-course/05-permissions
+cp ../02-tool-interfaces/*.py .
+source ../01-bare-loop/.venv/bin/activate</code></pre>
+            <span class="steps-label">Steps</span>
+            <ol>
+              <li>Decide <code>SANDBOX = os.path.realpath("./sandbox")</code> — the one directory writes are
+                allowed inside.</li>
+              <li>Before <code>write_file</code> executes, resolve its target path with
+                <code>os.path.realpath()</code> and check it starts with <code>SANDBOX</code>. If it doesn't,
+                skip the write entirely and return an observation like: <code>"Denied: writes are only allowed
+                inside sandbox/. You asked for '../../etc/passwd'."</code></li>
+              <li>Give <code>run_shell</code> a small allow-list of command names it may run (e.g.
+                <code>["ls", "cat", "python3"]</code>); reject anything else with a clear reason, e.g.
+                <code>"Denied: 'rm' is not on the allowed command list."</code></li>
+              <li>Append every decision — allowed or denied, and the reason — as one line to
+                <code>permissions.log</code>.</li>
+              <li>Ask the agent to write a file outside <code>sandbox/</code> on purpose (e.g. "write hello.txt to
+                the parent directory"). Watch what it does on its next turn after being denied.</li>
+            </ol>
+            <div class="verify"><b>check</b> The write outside <code>sandbox/</code> is blocked, <code>permissions.log</code>
+              records why, and the model's very next message proposes writing inside <code>sandbox/</code> instead —
+              proof the denial reason gave it enough to work with.</div>
           </div>
         </div>
       </section>
@@ -587,15 +724,33 @@ footer{padding:40px 0 10px; color:var(--ink-faint); font-size:12.5px; border-top
           </div>
           <div class="build">
             <h4>🛠 Build</h4>
-            <ul>
-              <li>Spawn 2–3 independent copies of your module-02 loop, each given a distinct slice of one bigger
-                task and its own empty message history.</li>
-              <li>Aggregate only their final one-paragraph summaries into the parent's context — never their full
-                transcripts.</li>
-            </ul>
-            <div class="verify"><b>check</b> Compare parent-process token usage against doing the same task in one
-              shared conversation. The fan-out version's parent context should stay flat regardless of how much
-              work the workers did.</div>
+            <div class="goal"><b>Goal</b> One parent script that hands 3 independent chunks of one bigger task to
+              3 separate, empty-history copies of your module-02 agent, and only ever reads back one short summary
+              from each — proving the parent's own context stays small no matter how much work happened underneath.</div>
+            <span class="env-label">Environment setup</span>
+            <pre><code>mkdir -p ~/harness-course/06-subagents &amp;&amp; cd ~/harness-course/06-subagents
+cp ../02-tool-interfaces/*.py .
+source ../01-bare-loop/.venv/bin/activate
+printf 'The quarterly report is due Friday.\n' &gt; noteA.txt
+printf 'Revenue grew 12 percent versus last quarter.\n' &gt; noteB.txt
+printf 'Three new hires start next month.\n' &gt; noteC.txt</code></pre>
+            <span class="steps-label">Steps</span>
+            <ol>
+              <li>Write <code>run_subagent(task_prompt: str) -&gt; str</code>: it creates a brand-new, empty
+                <code>messages = [{"role": "user", "content": task_prompt}]</code> list (no shared history with
+                anything else) and runs your module-02 loop to completion on just that, returning the final
+                answer string only.</li>
+              <li>In a separate <code>parent.py</code>, call <code>run_subagent()</code> three times — once per
+                note file — with a prompt like <code>"Summarize noteA.txt in one sentence."</code> for each.</li>
+              <li>Keep only the returned one-sentence strings in the parent's own message list. Never append a
+                subagent's internal tool calls or reasoning to the parent's history.</li>
+              <li>Have the parent make one final call combining the three summaries into a single paragraph.</li>
+              <li>Print the parent's own cumulative <code>input_tokens</code> total (from module 04) next to the
+                combined token total across all 3 subagents, so you can see the split.</li>
+            </ol>
+            <div class="verify"><b>check</b> The parent's own token count stays small and flat regardless of how
+              many tool calls each subagent needed internally — only the combining step and the 3 short summaries
+              ever entered the parent's context.</div>
           </div>
         </div>
       </section>
@@ -627,14 +782,32 @@ footer{padding:40px 0 10px; color:var(--ink-faint); font-size:12.5px; border-top
           </div>
           <div class="build">
             <h4>🛠 Build</h4>
-            <ul>
-              <li>A <code>memory/</code> directory. On a notable fact, write a small file plus one index line;
-                at the start of every new run, load the index (not every file) into the system prompt.</li>
-              <li>Kill the process. Start a brand-new conversation with empty history. Ask the agent something only
-                answerable from a fact you stored last run.</li>
-            </ul>
-            <div class="verify"><b>check</b> The fresh process recalls the fact correctly without it appearing
-              anywhere in the new conversation's own messages.</div>
+            <div class="goal"><b>Goal</b> A <code>memory/</code> folder that survives your Python process exiting
+              — you'll kill the script, start a completely new one with an empty conversation, and it still knows
+              a fact you told it in the previous run.</div>
+            <span class="env-label">Environment setup</span>
+            <pre><code>mkdir -p ~/harness-course/07-memory/memory &amp;&amp; cd ~/harness-course/07-memory
+cp ../02-tool-interfaces/*.py .
+source ../01-bare-loop/.venv/bin/activate
+touch memory/index.md</code></pre>
+            <span class="steps-label">Steps</span>
+            <ol>
+              <li>Add a new tool, <code>save_memory(title: str, content: str)</code>, that writes a file
+                <code>memory/&lt;title&gt;.md</code> and appends one line to <code>memory/index.md</code>, e.g.
+                <code>"- title: one-line summary"</code>.</li>
+              <li>At the very top of your script, before the first <code>call_model()</code> call, read
+                <code>memory/index.md</code> (not the individual fact files) and append its contents to your
+                system prompt under a heading like "Things you already know from past runs:".</li>
+              <li>Run the script. Tell the agent: <em>"Remember that fileA.txt sums to 50."</em> Confirm it calls
+                <code>save_memory</code> and that <code>memory/index.md</code> now has a new line.</li>
+              <li>Fully quit the script (<code>Ctrl+C</code>, or let it return).</li>
+              <li>Run <code>python3 agent.py</code> again as a brand-new process with an empty
+                <code>messages</code> list. Ask: <em>"What does fileA.txt sum to?"</em> — without mentioning the
+                earlier run.</li>
+            </ol>
+            <div class="verify"><b>check</b> The fresh process answers "50" correctly, and that fact never
+              appears anywhere in the new conversation's own <code>messages</code> list — it only got there via
+              <code>memory/index.md</code> loaded into the system prompt.</div>
           </div>
         </div>
       </section>
@@ -667,13 +840,34 @@ footer{padding:40px 0 10px; color:var(--ink-faint); font-size:12.5px; border-top
           </div>
           <div class="build">
             <h4>🛠 Build</h4>
-            <ul>
-              <li>Build one real stdio MCP server (official SDK) exposing two small tools.</li>
-              <li>Connect it live with <code>@modelcontextprotocol/inspector</code> and poke at it by hand.</li>
-              <li>Connect your own module-02 loop to it as an MCP client instead of a hardcoded tool.</li>
-            </ul>
-            <div class="verify"><b>check</b> The identical server works both from the inspector and from your own
-              loop with zero server-side changes — that portability is the entire point of the protocol.</div>
+            <div class="goal"><b>Goal</b> One small MCP server file exposing 2 tools, which you can poke at from
+              the official inspector UI AND call from your own agent loop — proving the same server works from two
+              independently-written clients with zero server-side changes.</div>
+            <span class="env-label">Environment setup</span>
+            <pre><code>mkdir -p ~/harness-course/08-mcp &amp;&amp; cd ~/harness-course/08-mcp
+source ../01-bare-loop/.venv/bin/activate
+pip3 install mcp
+# the inspector is a Node tool — needs Node.js/npx installed separately
+cp ../01-bare-loop/fileA.txt .</code></pre>
+            <span class="steps-label">Steps</span>
+            <ol>
+              <li>Follow the official MCP Python SDK's quickstart (<code>modelcontextprotocol.io</code>) to
+                scaffold <code>server.py</code> as a stdio server. This part is mostly copy-from-the-docs — the
+                lesson here is the protocol boundary, not hand-rolling a server framework.</li>
+              <li>Expose exactly 2 tools on it: <code>read_file(path)</code> and <code>add(a, b)</code>, using the
+                SDK's <code>@server.tool()</code>-style decorator (name may vary by SDK version).</li>
+              <li>Run <code>npx @modelcontextprotocol/inspector python3 server.py</code>. In the inspector's web
+                UI, manually call both tools and confirm you get correct results — this proves the server works
+                standalone, with no agent involved at all.</li>
+              <li>In your agent script, replace your local <code>read_file</code>/<code>add</code> functions with
+                an MCP client that connects to <code>server.py</code> over stdio and forwards tool calls to it
+                instead.</li>
+              <li>Copy your module-03 <code>run_evals.py</code> and <code>tasks.py</code> in here unchanged, and
+                re-run them against this MCP-backed agent.</li>
+            </ol>
+            <div class="verify"><b>check</b> The identical <code>server.py</code>, unmodified, answers correctly
+              both from the inspector's manual calls and from your agent's automated ones — and your module-03
+              eval suite still passes.</div>
           </div>
         </div>
       </section>
@@ -707,15 +901,36 @@ footer{padding:40px 0 10px; color:var(--ink-faint); font-size:12.5px; border-top
           </div>
           <div class="build">
             <h4>🛠 Build</h4>
-            <ul>
-              <li>Hash each trigger's underlying problem-state; skip re-invoking the loop if that hash hasn't
-                changed since the last run.</li>
-              <li>Add a max-turn and max-cost circuit breaker that raises instead of looping past it.</li>
-              <li>Log every invocation's tokens/cost/outcome to a file.</li>
-            </ul>
-            <div class="verify"><b>check</b> Simulate the same unchanged "alert" firing 50 times in a row. Assert
-              total token spend stays flat after the first invocation — this is the steady-state cost test the
-              canary incident was missing.</div>
+            <div class="goal"><b>Goal</b> Firing the same fake "alert" through your harness 50 times in a row costs
+              roughly the same as firing it once — because the 49 repeats get recognized as unchanged state and
+              skipped, with every attempt (run or skip) logged, and a hard ceiling that stops a runaway loop
+              instead of letting it burn silently.</div>
+            <span class="env-label">Environment setup</span>
+            <pre><code>mkdir -p ~/harness-course/09-hardening &amp;&amp; cd ~/harness-course/09-hardening
+cp ../02-tool-interfaces/*.py .
+source ../01-bare-loop/.venv/bin/activate
+python3 -c "import json,hashlib" # both are Python stdlib — nothing to install</code></pre>
+            <span class="steps-label">Steps</span>
+            <ol>
+              <li>Define a fake trigger payload as a Python dict, e.g.
+                <code>{"alert": "disk_high", "host": "web-1", "value": 91}</code>.</li>
+              <li>Write <code>problem_hash(payload)</code>: pick only the fields that describe the actual
+                problem (not a timestamp or a trigger/event ID) and hash them with
+                <code>hashlib.sha256(json.dumps(fields, sort_keys=True).encode()).hexdigest()</code>.</li>
+              <li>Before running the agent loop, check a small file <code>seen_hashes.json</code> (a dict of hash
+                → last-seen time) for that hash. If it's already there, log
+                <code>"skipped: unchanged state"</code> and return immediately without calling the model at all.</li>
+              <li>If it's new, run the loop as normal, then record the hash in <code>seen_hashes.json</code>.</li>
+              <li>Add <code>MAX_TURNS = 8</code> inside your loop; if you exceed it, raise an explicit error
+                ("circuit breaker: exceeded 8 turns") instead of continuing.</li>
+              <li>Write one line per invocation to <code>invocations.log</code>: timestamp, tokens used, turns
+                taken, and outcome (ran / skipped / breaker-tripped).</li>
+              <li>Write a small test script that calls your harness with the <em>identical</em> fake alert payload
+                50 times in a row in a loop, then sums the "tokens used" column of <code>invocations.log</code>.</li>
+            </ol>
+            <div class="verify"><b>check</b> Your test script's summed token total after 50 identical firings is
+              barely more than after 1 firing — the steady-state cost test the real canary-agent incident (11M
+              tokens/day on an unchanged alert) was missing.</div>
           </div>
         </div>
       </section>
@@ -748,13 +963,32 @@ footer{padding:40px 0 10px; color:var(--ink-faint); font-size:12.5px; border-top
           </div>
           <div class="build">
             <h4>🛠 Build</h4>
-            <ul>
-              <li>Pick 5 real, small bugs (your own repo, or a handful from SWE-bench-lite).</li>
-              <li>Point your full harness at each; score pass/fail with your module-03 eval runner.</li>
-              <li>Run the same 5 tasks through a naive one-shot call with no tools, no loop, as a baseline.</li>
-            </ul>
-            <div class="verify"><b>check</b> Report pass@1 for both. The gap between them is the number that
-              proves your harness earned its complexity — not a feeling, a score.</div>
+            <div class="goal"><b>Goal</b> One combined script pulling together modules 01–09, scored against 5
+              real bugs by your own module-03 eval runner — with a number proving it beats a plain one-shot API
+              call with no tools at all.</div>
+            <span class="env-label">Environment setup</span>
+            <pre><code>mkdir -p ~/harness-course/10-capstone &amp;&amp; cd ~/harness-course/10-capstone
+cp ../02-tool-interfaces/*.py ../03-eval-harness/run_evals.py ../04-context/*.py \
+   ../05-permissions/*.py ../07-memory/*.py ../09-hardening/*.py . 2>/dev/null
+source ../01-bare-loop/.venv/bin/activate
+git clone &lt;a small real repo you know well&gt; target-repo   # or use SWE-bench-lite's dataset instead</code></pre>
+            <span class="steps-label">Steps</span>
+            <ol>
+              <li>Pick 5 small, real, already-fixed bugs where you know the correct fix — from your own repo's
+                git history (<code>git log --oneline</code> and find 5 one-line-ish fixes), or 5 tasks from
+                SWE-bench-lite if you don't have a repo handy.</li>
+              <li>Wire one combined script from the pieces you've already built: module-02's tool loop, module-05's
+                permission gate around <code>write_file</code>/<code>run_shell</code>, module-04's compaction,
+                module-07's memory folder, and module-09's idempotency + circuit breaker.</li>
+              <li>For each of the 5 bugs: point the combined agent at the repo with a prompt describing the bug
+                (not the fix), let it work inside the module-05 sandbox, and check whether the resulting diff
+                matches the known-correct fix (or the relevant test passes) using a module-03-style checker.</li>
+              <li>Run the identical 5 bug descriptions through one plain, single API call with no tools, no loop,
+                no sandbox — just "here's the bug, write the fix" in one shot — as your baseline.</li>
+              <li>Tally pass@1 (bugs correctly fixed out of 5) for both your full harness and the naive baseline.</li>
+            </ol>
+            <div class="verify"><b>check</b> Report both pass@1 scores side by side. The gap between them is the
+              number that proves your harness earned its complexity — not a feeling, a score.</div>
           </div>
         </div>
       </section>
